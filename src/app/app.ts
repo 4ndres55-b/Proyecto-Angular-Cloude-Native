@@ -40,9 +40,10 @@ export class App implements OnInit, OnDestroy {
 
 
   constructor(
-    private authService: MsalService,
+    private authService : MsalService,
     private msalBroadcastService: MsalBroadcastService,
     private cdr: ChangeDetectorRef
+    
   ) {}
 
 

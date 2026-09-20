@@ -4,7 +4,7 @@ import {
     PublicClientApplication
 } from '@azure/msal-browser';
 
-import { environment } from '../environments/environment';
+import { environment } from '../environments/environments';
 
 export function MSALInstanceFactory(): IPublicClientApplication {
   return new PublicClientApplication({
