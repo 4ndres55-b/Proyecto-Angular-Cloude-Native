@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { RouterOutlet } from '@angular/router';
 
 import {
   ChangeDetectorRef,
@@ -27,7 +28,7 @@ import {
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -40,9 +41,10 @@ export class App implements OnInit, OnDestroy {
 
 
   constructor(
-    private authService: MsalService,
+    private authService : MsalService,
     private msalBroadcastService: MsalBroadcastService,
     private cdr: ChangeDetectorRef
+    
   ) {}
 
 
