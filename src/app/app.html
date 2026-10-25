@@ -1,19 +1,38 @@
-<main class="contenedor">
-  <h1>DSY1107 - MSAL + Angular</h1>
-  <section *ngIf="!user">
-    <p>Usuario no autenticado.</p>
-    <button (click)="login()">
+<!-- Login Screen (sin sesión) -->
+<div class="login-screen" *ngIf="!user">
+  <div class="login-bg-glow"></div>
+  <div class="login-card">
+    <div class="login-logo">
+      <span class="logo-icon">🍔</span>
+      <h1>Pedidos<span class="accent">360</span></h1>
+      <p class="login-subtitle">Plataforma Cloud Native · Azure AD + Spring Boot + RabbitMQ</p>
+    </div>
+    <div class="login-divider">
+      <span>Bienvenido</span>
+    </div>
+    <p class="login-desc">
+      Inicia sesión con tu cuenta institucional de Microsoft para acceder a la plataforma.
+    </p>
+    <button class="btn-microsoft" (click)="login()">
+      <svg width="20" height="20" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="10" height="10" fill="#F25022"/>
+        <rect x="11" y="0" width="10" height="10" fill="#7FBA00"/>
+        <rect x="0" y="11" width="10" height="10" fill="#00A4EF"/>
+        <rect x="11" y="11" width="10" height="10" fill="#FFB900"/>
+      </svg>
       Iniciar sesión con Microsoft
     </button>
-  </section>
-  <section *ngIf="user">
-    <h2>Sesión iniciada correctamente</h2>
-    <p><strong>Nombre:</strong> {{ user.name }}</p>
-    <p><strong>Cuenta:</strong> {{ user.username }}</p>
-    <p><strong>Tenant:</strong> {{ user.tenantId }}</p>
-    <button (click)="logout()">
-      Cerrar sesión
-    </button>
-  </section>
-</main>
-<router-outlet />
+    <div class="tech-badges">
+      <span class="tech">Angular 22</span>
+      <span class="tech">Spring Boot 3</span>
+      <span class="tech">🐇 RabbitMQ</span>
+      <span class="tech">AWS RDS</span>
+    </div>
+  </div>
+</div>
+
+<!-- App Principal (con sesión) -->
+<ng-container *ngIf="user">
+  <app-navbar></app-navbar>
+  <router-outlet />
+</ng-container>

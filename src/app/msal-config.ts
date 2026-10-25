@@ -4,14 +4,13 @@ import {
     PublicClientApplication
 } from '@azure/msal-browser';
 
-import { environment } from '../environments/environments';
+import { environment } from '../environments/environment';
 
 export function MSALInstanceFactory(): IPublicClientApplication {
   return new PublicClientApplication({
     auth: {
       clientId: environment.msal.clientId,
-      authority:
-        `https://login.microsoftonline.com/${environment.msal.tenantId}`,
+      authority: `https://login.microsoftonline.com/${environment.msal.tenantId}`,
       redirectUri: environment.msal.redirectUri,
       postLogoutRedirectUri: environment.msal.redirectUri
     },
