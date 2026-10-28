@@ -1,7 +1,7 @@
 import { ApplicationConfig, APP_INITIALIZER } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { MsalService, MSAL_INSTANCE } from '@azure/msal-angular';
+import { MsalService, MSAL_INSTANCE, MsalBroadcastService, MsalGuard } from '@azure/msal-angular';
 import { IPublicClientApplication } from '@azure/msal-browser';
 import { routes } from './app.routes';
 import { MSALInstanceFactory } from './msal-config';
@@ -25,7 +25,9 @@ export const appConfig: ApplicationConfig = {
       deps: [MSAL_INSTANCE], // Toma la instancia que creaste en msal-config.ts
       multi: true
     },
-    MsalService
+    MsalService,
+    MsalBroadcastService,
+    MsalGuard
   ]
 };
 
