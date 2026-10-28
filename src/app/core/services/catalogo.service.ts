@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { Producto } from '../models/producto.model';
-import { environment } from '../../environments/environment';
+import { Producto } from '../../shared/models/producto.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'

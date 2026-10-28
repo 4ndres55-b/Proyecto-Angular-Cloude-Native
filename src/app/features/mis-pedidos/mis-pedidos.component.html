@@ -1,0 +1,58 @@
+<div class="pedidos-page">
+  <div class="page-header">
+    <h1>📋 Mis Pedidos</h1>
+    <p>Seguimiento en tiempo real de tus órdenes procesadas por RabbitMQ</p>
+    <button class="btn-refresh" (click)="cargarPedidos()">🔄 Actualizar</button>
+  </div>
+
+  <div *ngIf="cargando" class="loading-state">
+    <div class="spinner"></div>
+    <p>Consultando AWS RDS...</p>
+  </div>
+
+  <div *ngIf="!cargando && pedidos.length === 0" class="empty-state">
+    <p class="empty-icon">🍽️</p>
+    <h3>No tienes pedidos aún</h3>
+    <p>Visita nuestra carta y realiza tu primer pedido</p>
+  </div>
+
+  <div class="pedidos-lista" *ngIf="!cargando && pedidos.length > 0">
+    <div *ngFor="let pedido of pedidos" class="pedido-card">
+      <div class="pedido-header">
+        <div class="pedido-id">
+          <span class="id-label">Pedido</span>
+          <span class="id-valor">#{{ pedido.id }}</span>
+        </div>
+        <span class="estado-badge" [class]="getClaseEstado(pedido.estado)">
+          {{ getIconoEstado(pedido.estado) }} {{ pedido.estado }}
+        </span>
+      </div>
+      <div class="pedido-detalles" *ngIf="pedido.detalles && pedido.detalles.length > 0">
+        <div *ngFor="let item of pedido.detalles" class="detalle-item">
+          <span class="item-nombre">{{ item.nombreProducto || 'Producto #' + item.productoId }}</span>
+          <span class="item-cant">x{{ item.cantidad }}</span>
+          <span class="item-precio">${{ (item.precioUnitario * item.cantidad) | number:'1.0-0' }}</span>
+        </div>
+      </div>
+      <div class="pedido-footer">
+        <div class="pipeline">
+          <div class="step" [class.done]="isPasoCompletado(estados.CREADO, pedido.estado)">
+            <span class="step-dot"></span>
+            <span class="step-label">Recibido</span>
+          </div>
+          <div class="step-line" [class.done]="isPasoCompletado(estados.EN_PREPARACION, pedido.estado)"></div>
+          <div class="step" [class.done]="isPasoCompletado(estados.EN_PREPARACION, pedido.estado)">
+            <span class="step-dot"></span>
+            <span class="step-label">En Cocina</span>
+          </div>
+          <div class="step-line" [class.done]="isPasoCompletado(estados.LISTO, pedido.estado)"></div>
+          <div class="step" [class.done]="isPasoCompletado(estados.LISTO, pedido.estado)">
+            <span class="step-dot"></span>
+            <span class="step-label">Listo</span>
+          </div>
+        </div>
+        <span class="total-pedido">${{ pedido.total | number:'1.0-0' }}</span>
+      </div>
+    </div>
+  </div>
+</div>

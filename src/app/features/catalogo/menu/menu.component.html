@@ -1,0 +1,47 @@
+<div class="menu-page">
+  <div class="menu-header">
+    <h1 class="menu-title">🍽️ Nuestra Carta</h1>
+    <p class="menu-subtitle">Ingredientes frescos · Preparación artesanal · Entrega directa de la cocina</p>
+  </div>
+
+  <div *ngIf="cargando" class="loading-state">
+    <div class="spinner"></div>
+    <p>Conectando con AWS RDS...</p>
+  </div>
+
+  <div class="categorias" *ngIf="!cargando">
+    <button
+      *ngFor="let cat of categorias"
+      class="btn-categoria"
+      [class.activa]="categoriaActiva === cat"
+      (click)="filtrarCategoria(cat)">
+      {{ cat }}
+    </button>
+  </div>
+
+  <div class="productos-grid" *ngIf="!cargando">
+    <!-- Llamada al componente hijo de la tarjeta -->
+    <app-producto-card
+      *ngFor="let producto of productosFiltrados"
+      [producto]="producto"
+      (agregar)="agregarAlCarrito($event)">
+    </app-producto-card>
+  </div>
+
+  <!-- Llamada al componente hijo del carrito -->
+  <app-carrito
+    [carrito]="carrito"
+    [carritoVisible]="carritoVisible"
+    [enviandoPedido]="enviandoPedido"
+    [totalCarrito]="totalCarrito"
+    [totalItems]="totalItems"
+    (toggleVisibility)="carritoVisible = !carritoVisible"
+    (incrementar)="incrementarItem($event)"
+    (decrementar)="decrementarItem($event)"
+    (confirmar)="confirmarPedido()">
+  </app-carrito>
+
+  <div class="toast-confirmacion" [class.visible]="toastVisible">
+    ✅ ¡Pedido enviado a la cocina! RabbitMQ lo está procesando...
+  </div>
+</div>

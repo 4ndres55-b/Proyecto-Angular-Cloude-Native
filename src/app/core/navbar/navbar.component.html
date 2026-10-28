@@ -1,0 +1,40 @@
+<nav class="navbar">
+  <div class="navbar-brand">
+    <span class="brand-icon">🍔</span>
+    <span class="brand-name">Pedidos<span class="brand-accent">360</span></span>
+    <span class="brand-badge">Cloud Native</span>
+  </div>
+
+  <div class="navbar-links" *ngIf="autenticado">
+    <a routerLink="/menu" routerLinkActive="active" class="nav-link">
+      <span class="nav-icon">🍽️</span>
+      <span>Menú</span>
+    </a>
+    <a routerLink="/mis-pedidos" routerLinkActive="active" class="nav-link">
+      <span class="nav-icon">📋</span>
+      <span>Mis Pedidos</span>
+    </a>
+    <a *ngIf="esAdmin" routerLink="/admin" routerLinkActive="active" class="nav-link nav-link-admin">
+      <span class="nav-icon">⚙️</span>
+      <span>Panel Admin</span>
+    </a>
+  </div>
+
+  <div class="navbar-user" *ngIf="autenticado">
+    <div class="rol-toggle" *ngIf="autenticado">
+      <button class="btn-rol" (click)="toggleRol()" [class.admin-mode]="esAdmin">
+        {{ esAdmin ? '👑 Admin' : '👤 Cliente' }}
+      </button>
+    </div>
+    <div class="user-info">
+      <div class="user-avatar">{{ iniciales }}</div>
+      <div class="user-details">
+        <span class="user-name">{{ nombreCorto }}</span>
+        <span class="user-email">{{ email }}</span>
+      </div>
+    </div>
+    <button class="btn-logout" (click)="logout()" title="Cerrar sesión">
+      <span>⏏</span>
+    </button>
+  </div>
+</nav>

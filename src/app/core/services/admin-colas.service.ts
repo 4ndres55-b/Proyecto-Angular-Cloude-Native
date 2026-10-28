@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { ColaRequest, RespuestaAdmin, ColaInfo } from '../models/cola.model';
-import { environment } from '../../environments/environment';
+import { ColaRequest, RespuestaAdmin, ColaInfo } from '../../shared/models//cola.model';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'

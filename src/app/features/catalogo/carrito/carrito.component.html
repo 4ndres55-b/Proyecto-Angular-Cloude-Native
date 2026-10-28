@@ -1,0 +1,38 @@
+<div class="carrito-panel" [class.abierto]="carritoVisible">
+  <div class="carrito-header">
+    <h3>🛒 Tu Pedido</h3>
+    <button class="btn-cerrar-carrito" (click)="toggleVisibility.emit()">✕</button>
+  </div>
+  <div class="carrito-items" *ngIf="carrito.length > 0">
+    <div *ngFor="let item of carrito; let i = index" class="carrito-item">
+      <div class="item-info">
+        <span class="item-nombre">{{ item.nombreProducto }}</span>
+        <span class="item-precio">${{ item.precioUnitario | number:'1.0-0' }}</span>
+      </div>
+      <div class="item-controles">
+        <button (click)="decrementar.emit(i)">−</button>
+        <span>{{ item.cantidad }}</span>
+        <button (click)="incrementar.emit(i)">+</button>
+      </div>
+    </div>
+  </div>
+  <div class="carrito-vacio" *ngIf="carrito.length === 0">
+    <p>Tu carrito está vacío 🌮</p>
+  </div>
+  <div class="carrito-footer" *ngIf="carrito.length > 0">
+    <div class="total-linea">
+      <span>Total</span>
+      <span class="total-precio">${{ totalCarrito | number:'1.0-0' }}</span>
+    </div>
+    <button
+      class="btn-confirmar"
+      [disabled]="enviandoPedido"
+      (click)="confirmar.emit()">
+      {{ enviandoPedido ? 'Enviando a Cocina... 🍳' : '🚀 Confirmar Pedido' }}
+    </button>
+  </div>
+</div>
+
+<button class="btn-carrito-flotante" (click)="toggleVisibility.emit()" *ngIf="carrito.length > 0">
+  🛒 <span class="carrito-count">{{ totalItems }}</span>
+</button>

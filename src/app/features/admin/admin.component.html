@@ -1,0 +1,140 @@
+<div class="admin-page">
+  <div class="admin-header">
+    <h1>⚙️ Panel Administrador</h1>
+    <p>Gestión de órdenes y microservicio de mensajería RabbitMQ</p>
+  </div>
+
+  <!-- Pestañas -->
+  <div class="tabs">
+    <button class="tab" [class.activa]="tabActiva === 'pedidos'" (click)="tabActiva = 'pedidos'">
+      📦 Todas las Órdenes
+    </button>
+    <button class="tab" [class.activa]="tabActiva === 'colas'" (click)="tabActiva = 'colas'">
+      🐇 Gestión de Colas RabbitMQ
+    </button>
+  </div>
+
+  <!-- === TAB PEDIDOS === -->
+  <div class="tab-content" *ngIf="tabActiva === 'pedidos'">
+    <div class="seccion-header">
+      <h2>Órdenes en el sistema</h2>
+      <button class="btn-refresh" (click)="cargarPedidos()">🔄 Actualizar</button>
+    </div>
+    <div *ngIf="cargandoPedidos" class="loading-mini"><div class="spinner"></div></div>
+    <div class="tabla-container" *ngIf="!cargandoPedidos">
+      <table class="tabla-admin">
+        <thead>
+          <tr>
+            <th>#ID</th>
+            <th>Cliente</th>
+            <th>Items</th>
+            <th>Total</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let pedido of pedidos">
+            <td class="id-col">#{{ pedido.id }}</td>
+            <td class="user-col">{{ pedido.username }}</td>
+            <td>{{ pedido.detalles?.length || 0 }} item(s)</td>
+            <td class="total-col">${{ pedido.total | number:'1.0-0' }}</td>
+            <td>
+              <span class="badge" [class]="getBadgeEstado(pedido.estado)">
+                {{ pedido.estado }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p *ngIf="pedidos.length === 0" class="sin-datos">No hay pedidos registrados aún.</p>
+    </div>
+  </div>
+
+  <!-- === TAB COLAS === -->
+  <div class="tab-content" *ngIf="tabActiva === 'colas'">
+    <div class="colas-grid">
+
+      <!-- Crear Cola -->
+      <div class="card-admin">
+        <h3>➕ Crear Cola</h3>
+        <p class="card-desc">Crea una nueva cola en el broker RabbitMQ via <code>POST /colas</code></p>
+        <div class="form-group">
+          <label>Nombre de la Cola</label>
+          <input
+            type="text"
+            [(ngModel)]="nuevaColaNombre"
+            placeholder="ej: pedidos.express"
+            class="input-admin"
+            [class.input-error]="errorNombre" />
+          <span class="error-msg" *ngIf="errorNombre">{{ errorNombre }}</span>
+        </div>
+        <div class="toggle-group">
+          <label class="toggle-label">
+            <input type="checkbox" [(ngModel)]="nuevaColaDurable" />
+            <span>Durable (sobrevive al reinicio del broker)</span>
+          </label>
+        </div>
+        <button class="btn-action btn-crear" (click)="crearCola()" [disabled]="creandoCola">
+          {{ creandoCola ? 'Creando...' : '✅ Crear Cola' }}
+        </button>
+        <div class="respuesta-box" *ngIf="respuestaCrear">
+          <span [class.exito]="respuestaCrear.exitoso" [class.error]="!respuestaCrear.exitoso">
+            {{ respuestaCrear.exitoso ? '✅' : '❌' }} {{ respuestaCrear.mensaje }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Consultar Cola -->
+      <div class="card-admin">
+        <h3>🔍 Consultar Cola</h3>
+        <p class="card-desc">Verifica el estado de una cola via <code>GET /colas/&#123;nombre&#125;</code></p>
+        <div class="form-group">
+          <label>Nombre de la Cola</label>
+          <input type="text" [(ngModel)]="consultarColaNombre" placeholder="ej: pedidos.cocina" class="input-admin" />
+        </div>
+        <button class="btn-action btn-consultar" (click)="consultarCola()" [disabled]="consultandoCola">
+          {{ consultandoCola ? 'Consultando...' : '🔍 Consultar' }}
+        </button>
+        <div class="info-box" *ngIf="infoConsulta">
+          <div *ngIf="infoConsulta.existe">
+            <p class="info-linea">✅ <strong>Cola activa</strong></p>
+            <p class="info-linea">📨 Mensajes listos: <span class="info-valor">{{ infoConsulta.mensajesListos ?? 0 }}</span></p>
+            <p class="info-linea">👥 Consumidores activos: <span class="info-valor">{{ infoConsulta.consumidoresActivos ?? 0 }}</span></p>
+          </div>
+          <div *ngIf="!infoConsulta.existe">
+            <p class="info-linea error">❌ {{ infoConsulta.mensaje }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Eliminar Cola -->
+      <div class="card-admin">
+        <h3>🗑️ Eliminar Cola</h3>
+        <p class="card-desc">Elimina una cola del broker via <code>DELETE /colas/&#123;nombre&#125;</code></p>
+        <div class="form-group">
+          <label>Nombre de la Cola a Eliminar</label>
+          <input type="text" [(ngModel)]="eliminarColaNombre" placeholder="ej: pedidos.express" class="input-admin" />
+        </div>
+        <button class="btn-action btn-eliminar" (click)="eliminarCola()" [disabled]="eliminandoCola">
+          {{ eliminandoCola ? 'Eliminando...' : '🗑️ Eliminar Cola' }}
+        </button>
+        <div class="respuesta-box" *ngIf="respuestaEliminar">
+          <span [class.exito]="respuestaEliminar.exitoso" [class.error]="!respuestaEliminar.exitoso">
+            {{ respuestaEliminar.exitoso ? '✅' : '❌' }} {{ respuestaEliminar.mensaje }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Info de Colas del Sistema -->
+      <div class="card-admin card-info">
+        <h3>📡 Colas del Sistema</h3>
+        <p class="card-desc">Colas configuradas en el microservicio de Órdenes</p>
+        <div class="cola-sistema" *ngFor="let cola of colasDelSistema">
+          <div class="cola-nombre">{{ cola.nombre }}</div>
+          <div class="cola-desc">{{ cola.descripcion }}</div>
+          <div class="cola-tipo" [class]="cola.tipo">{{ cola.etiqueta }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

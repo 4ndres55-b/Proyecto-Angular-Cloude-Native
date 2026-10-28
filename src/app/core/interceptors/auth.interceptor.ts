@@ -3,7 +3,7 @@ import { inject } from '@angular/core';
 import { MsalService } from '@azure/msal-angular';
 import { from } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
-import { environment } from '../../environments/environment';
+import { environment } from '../../../environments/environment';
 
 /**
  * Interceptor HTTP funcional para Angular 22.
