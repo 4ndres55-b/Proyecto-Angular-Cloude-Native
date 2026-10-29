@@ -15,14 +15,14 @@ export const authGuard: CanActivateFn = (route, state) => {
       }
       return true;
     }
+    msalService.loginRedirect({
+      scopes: ['openid', 'profile', 'email']
+    });
+
   } catch (e) {
     console.error('MSAL aún no está listo en el guard:', e);
+    return false;
   }
-
-  // Redirige al login si no hay sesión activa
-  msalService.loginRedirect({
-    scopes: ['openid', 'profile', 'email']
-  });
 
   return false;
 };

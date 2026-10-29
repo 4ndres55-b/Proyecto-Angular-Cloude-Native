@@ -26,8 +26,10 @@ export class App implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    this.actualizarUsuario();
+    // 1. OBLIGATORIO: Dejar que MSAL inicie y procese redirecciones antes de pedir cuentas
+    this.authService.handleRedirectObservable().subscribe();
 
+    // 2. Solo actuamos cuando MSAL nos dice que su estado es "None" (Listo)
     this.msalBroadcastService.inProgress$.pipe(
       filter((status: InteractionStatus) => status === InteractionStatus.None),
       takeUntil(this.destroying$)
@@ -50,7 +52,6 @@ export class App implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  // <-- AGREGAR ESTE MÉTODO DE NUEVO -->
   login(): void {
     this.authService.loginRedirect({
       scopes: ['openid', 'profile', 'email']
