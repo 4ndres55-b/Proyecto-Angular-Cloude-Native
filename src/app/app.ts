@@ -2,11 +2,12 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MsalBroadcastService, MsalService } from '@azure/msal-angular';
-import { AuthenticationResult, InteractionStatus } from '@azure/msal-browser';
+import { InteractionStatus } from '@azure/msal-browser';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
-import { NavbarComponent } from './core/navbar/navbar.component'; 
-import { AuthService } from './core/services/auth.service'; 
+import { NavbarComponent } from './core/navbar/navbar.component';
+import { AuthService } from './core/services/auth.service';
+
 @Component({
   selector: 'app-root',
   imports: [CommonModule, RouterOutlet, NavbarComponent],
@@ -22,19 +23,10 @@ export class App implements OnInit, OnDestroy {
     private msalBroadcastService: MsalBroadcastService,
     private cdr: ChangeDetectorRef,
     private appAuthService: AuthService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    this.authService.handleRedirectObservable({
-      navigateToLoginRequestUrl: false
-    }).subscribe({
-      next: (result: AuthenticationResult | null) => {
-        if (result?.account) {
-          this.authService.instance.setActiveAccount(result.account);
-        }
-      },
-      error: (error) => { console.error('Error MSAL:', error); }
-    });
+    this.actualizarUsuario();
 
     this.msalBroadcastService.inProgress$.pipe(
       filter((status: InteractionStatus) => status === InteractionStatus.None),
@@ -58,6 +50,7 @@ export class App implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
+  // <-- AGREGAR ESTE MÉTODO DE NUEVO -->
   login(): void {
     this.authService.loginRedirect({
       scopes: ['openid', 'profile', 'email']

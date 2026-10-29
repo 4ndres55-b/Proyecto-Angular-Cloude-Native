@@ -42,8 +42,10 @@ export class MenuComponent implements OnInit, OnDestroy {
       
       const cats = new Set(productos.map(p => p.categoria).filter(c => c));
       this.categorias = ['Todas', ...Array.from(cats)];
-      
       this.cargando = false;
+
+      console.log('Productos obtenidos:', productos);
+      console.log(this.cargando);
     });
   }
 
