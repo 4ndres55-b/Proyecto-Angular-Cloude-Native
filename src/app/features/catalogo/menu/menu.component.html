@@ -1,34 +1,22 @@
 <div class="menu-page">
   <div class="menu-header">
     <h1 class="menu-title">🍽️ Nuestra Carta</h1>
-    <p class="menu-subtitle">Ingredientes frescos · Preparación artesanal · Entrega directa de la cocina</p>
+    <p class="menu-subtitle">Menú sincronizado con el microservicio de Catálogo</p>
   </div>
 
   <div *ngIf="cargando" class="loading-state">
     <div class="spinner"></div>
-    <p>Conectando con AWS RDS...</p>
-  </div>
-
-  <div class="categorias" *ngIf="!cargando">
-    <button
-      *ngFor="let cat of categorias"
-      class="btn-categoria"
-      [class.activa]="categoriaActiva === cat"
-      (click)="filtrarCategoria(cat)">
-      {{ cat }}
-    </button>
+    <p>Conectando con Catálogo...</p>
   </div>
 
   <div class="productos-grid" *ngIf="!cargando">
-    <!-- Llamada al componente hijo de la tarjeta -->
     <app-producto-card
-      *ngFor="let producto of productosFiltrados"
+      *ngFor="let producto of productos"
       [producto]="producto"
       (agregar)="agregarAlCarrito($event)">
     </app-producto-card>
   </div>
 
-  <!-- Llamada al componente hijo del carrito -->
   <app-carrito
     [carrito]="carrito"
     [carritoVisible]="carritoVisible"

@@ -9,6 +9,9 @@
     <button class="tab" [class.activa]="tabActiva === 'pedidos'" (click)="tabActiva = 'pedidos'">
       📦 Todas las Órdenes
     </button>
+    <button class="tab" [class.activa]="tabActiva === 'catalogo'" (click)="tabActiva = 'catalogo'">
+      🍔 Catálogo
+    </button>
     <button class="tab" [class.activa]="tabActiva === 'colas'" (click)="tabActiva = 'colas'">
       🐇 Gestión de Colas RabbitMQ
     </button>
@@ -47,6 +50,62 @@
         </tbody>
       </table>
       <p *ngIf="pedidos.length === 0" class="sin-datos">No hay pedidos registrados aún.</p>
+    </div>
+  </div>
+  <!-- === TAB CATÁLOGO === -->
+  <div class="tab-content" *ngIf="tabActiva === 'catalogo'">
+    
+    <!-- Formulario para agregar -->
+    <div class="card-admin" style="max-width: 600px; margin-bottom: 2rem;">
+      <h3>➕ Agregar Nuevo Producto</h3>
+      <div class="form-group">
+        <label>Nombre del Producto</label>
+        <input type="text" [(ngModel)]="nuevoProducto.nombre" class="input-admin" placeholder="Ej: Pizza Napolitana">
+      </div>
+      <div class="form-group">
+        <label>Precio ($)</label>
+        <input type="number" [(ngModel)]="nuevoProducto.precio" class="input-admin" placeholder="Ej: 10900">
+      </div>
+      <span class="error-msg" *ngIf="errorCatalogo">{{ errorCatalogo }}</span>
+      <button class="btn-action btn-crear" style="margin-top: 1rem;" (click)="crearProducto()" [disabled]="guardandoProducto">
+        {{ guardandoProducto ? 'Guardando...' : 'Guardar Producto' }}
+      </button>
+    </div>
+
+    <!-- Tabla de productos -->
+    <div class="seccion-header">
+      <h2>Productos en Base de Datos</h2>
+      <button class="btn-refresh" (click)="cargarProductos()">🔄 Actualizar</button>
+    </div>
+    
+    <div *ngIf="cargandoProductos" class="loading-mini"><div class="spinner"></div></div>
+    
+    <div class="tabla-container" *ngIf="!cargandoProductos">
+      <table class="tabla-admin">
+        <thead>
+          <tr>
+            <th>#ID</th>
+            <th>Nombre</th>
+            <th>Precio</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let prod of productos">
+            <td class="id-col">{{ prod.id }}</td>
+            <td class="user-col">{{ prod.nombre }}</td>
+            <td class="total-col">${{ prod.precio | number:'1.0-0' }}</td>
+            <td>
+              <button class="btn-refresh" style="color: #f87171; border-color: rgba(239,68,68,0.3);" 
+                      (click)="eliminarProducto(prod.id)" 
+                      [disabled]="eliminandoProductoId === prod.id">
+                {{ eliminandoProductoId === prod.id ? 'Eliminando...' : '🗑️' }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p *ngIf="productos.length === 0" class="sin-datos">No hay productos en el catálogo.</p>
     </div>
   </div>
 
