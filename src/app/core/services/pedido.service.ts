@@ -10,8 +10,8 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root'
 })
 export class PedidoService {
-  private apiUrl = `${environment.bffUrl}/api/bff/pedidos`;
-
+ private apiUrl = `${environment.bffUrl}/api/bff/pedidos`;
+ 
   private pedidosMock: Pedido[] = [
     {
       id: 1,

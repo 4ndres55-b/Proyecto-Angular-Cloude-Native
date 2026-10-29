@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core'; // <-- Importado aquí
 import { CommonModule } from '@angular/common';
 import { PedidoService } from '../../core/services/pedido.service';
 import { Pedido } from '../../shared/models/pedido.model';
@@ -16,21 +16,33 @@ import { takeUntil } from 'rxjs/operators';
 export class MisPedidosComponent implements OnInit, OnDestroy {
   pedidos: Pedido[] = [];
   cargando = true;
-  estados = EstadoPedido; // Exponemos el Enum para poder usarlo en el HTML
+  estados = EstadoPedido;
   private destroy$ = new Subject<void>();
   
-  // Usamos el Enum en lugar de strings sueltos
   private pasos = [EstadoPedido.CREADO, EstadoPedido.EN_PREPARACION, EstadoPedido.LISTO];
 
-  constructor(private pedidoService: PedidoService) {}
+  constructor(
+    private pedidoService: PedidoService,
+    private cdr: ChangeDetectorRef // <-- Inyectado aquí
+  ) {}
 
-  ngOnInit(): void { this.cargarPedidos(); }
+  ngOnInit(): void { 
+    this.cargarPedidos(); 
+  }
 
   cargarPedidos(): void {
     this.cargando = true;
-    this.pedidoService.obtenerPedidos().pipe(takeUntil(this.destroy$)).subscribe(p => {
-      this.pedidos = p;
-      this.cargando = false;
+    this.pedidoService.obtenerPedidos().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (p) => {
+        this.pedidos = p;
+        this.cargando = false;
+        this.cdr.detectChanges(); // <-- Obliga a Angular a actualizar el HTML
+      },
+      error: (err) => {
+        console.error('Error al cargar mis pedidos:', err);
+        this.cargando = false; // <-- Apaga el spinner si hay error
+        this.cdr.detectChanges(); // <-- Actualiza la pantalla para mostrar mensaje vacío
+      }
     });
   }
 
@@ -56,5 +68,8 @@ export class MisPedidosComponent implements OnInit, OnDestroy {
     return this.pasos.indexOf(estadoActual as EstadoPedido) >= this.pasos.indexOf(paso as EstadoPedido);
   }
 
-  ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
+  ngOnDestroy(): void { 
+    this.destroy$.next(); 
+    this.destroy$.complete(); 
+  }
 }
