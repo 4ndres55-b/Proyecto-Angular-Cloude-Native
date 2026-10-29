@@ -18,6 +18,10 @@ import { takeUntil } from 'rxjs/operators';
 })
 export class MenuComponent implements OnInit, OnDestroy {
   productos: Producto[] = [];
+  productosFiltrados: Producto[] = [];
+  categorias: string[] = ['Todas'];
+  categoriaActiva = 'Todas';
+  
   carrito: ItemCarrito[] = [];
   carritoVisible = false;
   cargando = true;
@@ -34,8 +38,18 @@ export class MenuComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.catalogoService.obtenerProductos().pipe(takeUntil(this.destroy$)).subscribe(productos => {
       this.productos = productos;
+      this.productosFiltrados = productos;
+      
+      const cats = new Set(productos.map(p => p.categoria).filter(c => c));
+      this.categorias = ['Todas', ...Array.from(cats)];
+      
       this.cargando = false;
     });
+  }
+
+  filtrarCategoria(cat: string): void {
+    this.categoriaActiva = cat;
+    this.productosFiltrados = cat === 'Todas' ? this.productos : this.productos.filter(p => p.categoria === cat);
   }
 
   agregarAlCarrito(producto: Producto): void {
@@ -47,7 +61,8 @@ export class MenuComponent implements OnInit, OnDestroy {
         productoId: producto.id!,
         nombreProducto: producto.nombre,
         cantidad: 1,
-        precioUnitario: producto.precio
+        precioUnitario: producto.precio,
+        imagen: producto.urlImg 
       });
     }
     this.carritoVisible = true;

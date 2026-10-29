@@ -1,10 +1,23 @@
-<div class="producto-card">
+<div class="producto-card" [class.agotado]="producto.stock === 0">
+  <div class="producto-imagen">
+    <img [src]="producto.urlImg || 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=80'" 
+         [alt]="producto.nombre" 
+         (error)="onImgError($event)" />
+    <span class="categoria-badge">{{ producto.categoria }}</span>
+    <span class="stock-badge" *ngIf="producto.stock > 0 && producto.stock <= 5">
+      ¡Últimas {{ producto.stock }}!
+    </span>
+  </div>
   <div class="producto-info">
     <h3>{{ producto.nombre }}</h3>
+    <p class="producto-desc">{{ producto.descripcion }}</p>
     <div class="producto-footer">
       <span class="producto-precio">${{ producto.precio | number:'1.0-0' }}</span>
-      <button class="btn-agregar" (click)="agregar.emit(producto)">
-        + Agregar
+      <button
+        class="btn-agregar"
+        (click)="agregar.emit(producto)"
+        [disabled]="producto.stock === 0">
+        {{ producto.stock === 0 ? 'Agotado' : '+ Agregar' }}
       </button>
     </div>
   </div>

@@ -12,4 +12,8 @@ import { Producto } from '../../../shared/models/producto.model';
 export class ProductoCardComponent {
   @Input() producto!: Producto;
   @Output() agregar = new EventEmitter<Producto>();
+
+  onImgError(event: any): void {
+    event.target.src = 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=80';
+  }
 }

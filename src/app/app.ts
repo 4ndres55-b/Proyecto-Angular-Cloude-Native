@@ -5,9 +5,8 @@ import { MsalBroadcastService, MsalService } from '@azure/msal-angular';
 import { AuthenticationResult, InteractionStatus } from '@azure/msal-browser';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
-import { NavbarComponent } from './components/navbar/navbar.component';
-import { AuthService } from './services/auth.service';
-
+import { NavbarComponent } from './core/navbar/navbar.component'; 
+import { AuthService } from './core/services/auth.service'; 
 @Component({
   selector: 'app-root',
   imports: [CommonModule, RouterOutlet, NavbarComponent],

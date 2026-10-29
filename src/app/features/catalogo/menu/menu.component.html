@@ -1,7 +1,7 @@
 <div class="menu-page">
   <div class="menu-header">
     <h1 class="menu-title">🍽️ Nuestra Carta</h1>
-    <p class="menu-subtitle">Menú sincronizado con el microservicio de Catálogo</p>
+    <p class="menu-subtitle">Menú 100% real sincronizado con el microservicio de Catálogo</p>
   </div>
 
   <div *ngIf="cargando" class="loading-state">
@@ -9,9 +9,20 @@
     <p>Conectando con Catálogo...</p>
   </div>
 
+
+  <div class="categorias" *ngIf="!cargando">
+    <button
+      *ngFor="let cat of categorias"
+      class="btn-categoria"
+      [class.activa]="categoriaActiva === cat"
+      (click)="filtrarCategoria(cat)">
+      {{ cat }}
+    </button>
+  </div>
+
   <div class="productos-grid" *ngIf="!cargando">
     <app-producto-card
-      *ngFor="let producto of productos"
+      *ngFor="let producto of productosFiltrados"
       [producto]="producto"
       (agregar)="agregarAlCarrito($event)">
     </app-producto-card>

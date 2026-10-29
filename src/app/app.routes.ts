@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './guards/auth.guard';
+import { authGuard } from './core/guards/auth.guard'; 
 
 export const routes: Routes = [
   {
@@ -9,17 +9,17 @@ export const routes: Routes = [
   },
   {
     path: 'menu',
-    loadComponent: () => import('./components/menu/menu.component').then(m => m.MenuComponent),
+    loadComponent: () => import('./features/catalogo/menu/menu.component').then(m => m.MenuComponent), 
     canActivate: [authGuard]
   },
   {
     path: 'mis-pedidos',
-    loadComponent: () => import('./components/mis-pedidos/mis-pedidos.component').then(m => m.MisPedidosComponent),
+    loadComponent: () => import('./features/mis-pedidos/mis-pedidos.component').then(m => m.MisPedidosComponent), 
     canActivate: [authGuard]
   },
   {
     path: 'admin',
-    loadComponent: () => import('./components/admin/admin.component').then(m => m.AdminComponent),
+    loadComponent: () => import('./features/admin/admin.component').then(m => m.AdminComponent), 
     canActivate: [authGuard]
   },
   {
