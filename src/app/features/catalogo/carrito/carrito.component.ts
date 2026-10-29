@@ -1,8 +1,11 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DetallePedido } from '../../../shared/models/pedido.model';
 
-export interface ItemCarrito extends DetallePedido {
+export interface ItemCarrito {
+  productoId: number;
+  nombreProducto: string;
+  cantidad: number;
+  precioUnitario: number;
   imagen?: string;
 }
 
@@ -14,12 +17,14 @@ export interface ItemCarrito extends DetallePedido {
   styleUrls: ['./carrito.component.css']
 })
 export class CarritoComponent {
+  // Inputs que recibe desde menu.component.html
   @Input() carrito: ItemCarrito[] = [];
   @Input() carritoVisible = false;
   @Input() enviandoPedido = false;
   @Input() totalCarrito = 0;
   @Input() totalItems = 0;
 
+  // Eventos que envía hacia menu.component.ts
   @Output() toggleVisibility = new EventEmitter<void>();
   @Output() incrementar = new EventEmitter<number>();
   @Output() decrementar = new EventEmitter<number>();
