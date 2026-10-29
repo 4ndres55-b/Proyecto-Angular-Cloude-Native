@@ -5,8 +5,7 @@ import { MsalService, MSAL_INSTANCE, MsalBroadcastService, MsalGuard } from '@az
 import { IPublicClientApplication } from '@azure/msal-browser';
 import { routes } from './app.routes';
 import { MSALInstanceFactory } from './msal-config';
-import { authInterceptor } from './core/interceptors/auth.interceptor'; // RUTA CORREGIDA
-
+import { authInterceptor } from './core/interceptors/auth.interceptor'; 
 export function initializeMsal(msalInstance: IPublicClientApplication): () => Promise<void> {
   return () => msalInstance.initialize();
 }
