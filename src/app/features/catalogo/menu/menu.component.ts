@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy,ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CatalogoService } from '../../../core/services/catalogo.service';
 import { PedidoService } from '../../../core/services/pedido.service';
@@ -6,6 +6,7 @@ import { AuthService } from '../../../core/services/auth.service';
 import { Producto } from '../../../shared/models/producto.model';
 import { ProductoCardComponent } from '../producto/producto-card.component';
 import { CarritoComponent, ItemCarrito } from '../carrito/carrito.component';
+
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -32,20 +33,29 @@ export class MenuComponent implements OnInit, OnDestroy {
   constructor(
     private catalogoService: CatalogoService,
     private pedidoService: PedidoService,
-    private authService: AuthService
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit(): void {
-    this.catalogoService.obtenerProductos().pipe(takeUntil(this.destroy$)).subscribe(productos => {
-      this.productos = productos;
-      this.productosFiltrados = productos;
-      
-      const cats = new Set(productos.map(p => p.categoria).filter(c => c));
-      this.categorias = ['Todas', ...Array.from(cats)];
-      this.cargando = false;
+ngOnInit(): void {
+    this.catalogoService.obtenerProductos().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (productos) => {
+        this.productos = productos;
+        this.productosFiltrados = productos;
+        
+        const cats = new Set(productos.map(p => p.categoria).filter(c => c));
+        this.categorias = ['Todas', ...Array.from(cats)];
+        
+        this.cargando = false;
+        this.cdr.detectChanges();
 
-      console.log('Productos obtenidos:', productos);
-      console.log(this.cargando);
+        console.log('Productos obtenidos:', productos);
+      },
+      error: (err) => {
+        console.error('Error cargando catálogo:', err);
+        this.cargando = false; 
+        this.cdr.detectChanges(); 
+      }
     });
   }
 
