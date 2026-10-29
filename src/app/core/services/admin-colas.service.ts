@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { ColaRequest, RespuestaAdmin, ColaInfo } from '../../shared/models//cola.model';
+import { ColaRequest, RespuestaAdmin, ColaInfo } from '../../shared/models/cola.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -17,7 +17,7 @@ export class AdminColasService {
     return this.http.post<RespuestaAdmin>(this.apiUrl, request).pipe(
       catchError((error) => {
         console.error('Error al crear cola en el Administrador:', error);
-        return of({ exitoso: false, mensaje: 'Error de conexión con el microservicio Administrador (8084). ¿Está RabbitMQ levantado?', nombreCola: request.nombre });
+        return of({ exitoso: false, mensaje: 'Error de conexión con el microservicio Administrador (8084).', nombreCola: request.nombre });
       })
     );
   }
@@ -36,6 +36,15 @@ export class AdminColasService {
       catchError((error) => {
         console.error('Error al consultar cola:', error);
         return of({ existe: false, nombre, mensaje: 'No se pudo conectar con el broker RabbitMQ.' });
+      })
+    );
+  }
+
+  listarColas(): Observable<any[]> {
+    return this.http.get<any[]>(this.apiUrl).pipe(
+      catchError((error) => {
+        console.error('Error al obtener el listado de colas:', error);
+        return of([]);
       })
     );
   }
