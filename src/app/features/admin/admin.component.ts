@@ -48,6 +48,10 @@ export class AdminComponent implements OnInit, OnDestroy {
   respuestaEliminar: RespuestaAdmin | null = null;
   infoConsulta: ColaInfo | null = null;
   
+  //Variables para las colas
+  colasRealesBroker: any[] = [];
+  cargandoColasBroker = false;
+  errorColasBroker = '';
   private destroy$ = new Subject<void>();
 
   colasDelSistema = [
@@ -64,7 +68,8 @@ export class AdminComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void { 
     this.cargarPedidos(); 
-    this.cargarProductos(); // Cargamos los productos al iniciar
+    this.cargarProductos();
+    this.cargarColasDesdeBroker();
   }
 
   // ==========================================
@@ -150,13 +155,19 @@ export class AdminComponent implements OnInit, OnDestroy {
   // METODOS DE COLAS
   // ==========================================
   crearCola(): void {
+
     this.errorNombre = '';
     this.respuestaCrear = null;
     if (!this.nuevaColaNombre.trim() || this.nuevaColaNombre.trim().length < 3) {
       this.errorNombre = 'El nombre debe tener al menos 3 caracteres.';
       return;
     }
-    const req: ColaRequest = { nombre: this.nuevaColaNombre.trim(), durable: this.nuevaColaDurable };
+    const req: ColaRequest = { 
+        nombre: this.nuevaColaNombre.trim(), 
+        durable: this.nuevaColaDurable,
+        exclusiva: false,
+        autoDelete: false
+    };
     this.creandoCola = true;
     this.adminService.crearCola(req).pipe(takeUntil(this.destroy$)).subscribe(r => {
       this.respuestaCrear = r;
@@ -185,6 +196,20 @@ export class AdminComponent implements OnInit, OnDestroy {
       if (r.exitoso) { this.eliminarColaNombre = ''; }
     });
   }
+  cargarColasDesdeBroker(): void {
+  this.cargandoColasBroker = true;
+  this.errorColasBroker = '';
 
+  this.adminService.listarColas().pipe(takeUntil(this.destroy$)).subscribe({
+    next: (colas) => {
+      this.colasRealesBroker = colas;
+      this.cargandoColasBroker = false;
+    },
+    error: () => {
+      this.errorColasBroker = 'No se pudo cargar el listado de colas en vivo.';
+      this.cargandoColasBroker = false;
+    }
+  });
+}
   ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
 }

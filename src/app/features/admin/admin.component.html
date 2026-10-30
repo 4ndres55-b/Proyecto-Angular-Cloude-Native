@@ -217,14 +217,34 @@
         </div>
       </div>
 
-      <!-- Info de Colas del Sistema -->
+      <!--Lista de colas en el broker-->
       <div class="card-admin card-info">
-        <h3>📡 Colas del Sistema</h3>
-        <p class="card-desc">Colas configuradas en el microservicio de Órdenes</p>
-        <div class="cola-sistema" *ngFor="let cola of colasDelSistema">
-          <div class="cola-nombre">{{ cola.nombre }}</div>
-          <div class="cola-desc">{{ cola.descripcion }}</div>
-          <div class="cola-tipo" [class]="cola.tipo">{{ cola.etiqueta }}</div>
+        <div class="seccion-header">
+            <h3>📡 Colas en el Broker (En Vivo)</h3>
+            <button class="btn-refresh" (click)="cargarColasDesdeBroker()" style="padding: 4px 8px; font-size: 0.7rem;">🔄</button>
+        </div>
+        <p class="card-desc">Colas actualmente registradas y operativas en RabbitMQ.</p>
+        
+        <div *ngIf="cargandoColasBroker" class="loading-mini"><div class="spinner"></div></div>
+        <p *ngIf="errorColasBroker" class="error-msg">{{ errorColasBroker }}</p>
+
+        <div *ngIf="!cargandoColasBroker && colasRealesBroker.length === 0" class="sin-datos">
+          No hay colas registradas en el broker en este momento.
+        </div>
+
+        <div class="cola-sistema" *ngFor="let cola of colasRealesBroker">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                  <div class="cola-nombre">{{ cola.name }}</div>
+                  <div class="cola-desc">
+                    Mensajes en espera: <strong>{{ cola.messages_ready || 0 }}</strong> | 
+                    Consumidores: <strong>{{ cola.consumers || 0 }}</strong>
+                  </div>
+              </div>
+              <div class="cola-tipo" [ngClass]="{'tipo-dlq': cola.name.includes('dlq'), 'tipo-principal': !cola.name.includes('dlq')}">
+                {{ cola.name.includes('dlq') ? 'DLQ' : 'Activa' }}
+              </div>
+          </div>
         </div>
       </div>
     </div>

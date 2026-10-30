@@ -16,8 +16,24 @@ export class AdminColasService {
   crearCola(request: ColaRequest): Observable<RespuestaAdmin> {
     return this.http.post<RespuestaAdmin>(this.apiUrl, request).pipe(
       catchError((error) => {
-        console.error('Error al crear cola en el Administrador:', error);
-        return of({ exitoso: false, mensaje: 'Error de conexión con el microservicio Administrador (8084).', nombreCola: request.nombre });
+        console.error('Error crudo devuelto por el servidor:', error);
+        
+        let mensajeError = 'Error de conexión con el microservicio Administrador.';
+        if (error.error && error.error.error) {
+            mensajeError = error.error.error; 
+            if (error.error.detalles) {
+                const primerError = Object.values(error.error.detalles)[0];
+                mensajeError += ': ' + primerError;
+            } else if (error.error.mensaje) {
+                mensajeError += ' -> ' + error.error.mensaje;
+            }
+          }
+        
+        return of({ 
+            exitoso: false, 
+            mensaje: mensajeError, 
+            nombreCola: request.nombre 
+        });
       })
     );
   }
