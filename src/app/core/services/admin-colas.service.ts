@@ -64,4 +64,13 @@ export class AdminColasService {
       })
     );
   }
+
+  leerMensajes(nombreCola: string, cantidad: number = 10): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${nombreCola}/mensajes?count=${cantidad}`).pipe(
+      catchError((error) => {
+        console.error(`Error al leer mensajes de ${nombreCola}:`, error);
+        return of([]);
+      })
+    );
+  }
 }

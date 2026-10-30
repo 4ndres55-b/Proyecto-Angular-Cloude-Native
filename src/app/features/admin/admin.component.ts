@@ -1,12 +1,12 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminColasService } from '../../core/services/admin-colas.service';
 import { PedidoService } from '../../core/services/pedido.service';
-import { CatalogoService } from '../../core/services/catalogo.service'; // IMPORTANTE
+import { CatalogoService } from '../../core/services/catalogo.service';
 import { ColaRequest, RespuestaAdmin, ColaInfo } from '../../shared/models/cola.model';
 import { Pedido } from '../../shared/models/pedido.model';
-import { Producto } from '../../shared/models/producto.model'; // IMPORTANTE
+import { Producto } from '../../shared/models/producto.model';
 import { EstadoPedido } from '../../shared/models/estado-pedido.enum';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -21,21 +21,17 @@ import { takeUntil } from 'rxjs/operators';
 export class AdminComponent implements OnInit, OnDestroy {
   tabActiva = 'pedidos';
   
-  // --- VARIABLES DE PEDIDOS ---
   pedidos: Pedido[] = [];
-  cargandoPedidos = true;
+  cargandoPedidos = false;
 
-  // --- VARIABLES DE CATÁLOGO (NUEVAS) ---
   productos: Producto[] = [];
   cargandoProductos = false;
-  // El nuevo producto ahora tiene todos los campos que exige el backend
   nuevoProducto: Producto = { nombre: '', precio: 0, stock: 0, descripcion: '', categoria: '' };
   imagenSeleccionada: File | undefined;
   guardandoProducto = false;
   eliminandoProductoId: number | null = null;
   errorCatalogo = '';
 
-  // --- VARIABLES DE COLAS ---
   nuevaColaNombre = '';
   nuevaColaDurable = true;
   consultarColaNombre = '';
@@ -48,22 +44,21 @@ export class AdminComponent implements OnInit, OnDestroy {
   respuestaEliminar: RespuestaAdmin | null = null;
   infoConsulta: ColaInfo | null = null;
   
-  //Variables para las colas
   colasRealesBroker: any[] = [];
   cargandoColasBroker = false;
   errorColasBroker = '';
+  
+  mensajesEnCola: any[] = [];
+  viendoMensajesCola: string | null = null;
+  cargandoMensajes = false;
+  
   private destroy$ = new Subject<void>();
-
-  colasDelSistema = [
-    { nombre: 'pedidos.cocina', descripcion: 'Recibe eventos de nuevos pedidos para preparación en cocina.', tipo: 'tipo-principal', etiqueta: 'Activa' },
-    { nombre: 'pedidos.tickets', descripcion: 'Genera boletas y comprobantes de forma asíncrona.', tipo: 'tipo-principal', etiqueta: 'Activa' },
-    { nombre: 'pedidos.dlq', descripcion: 'Dead Letter Queue: almacena mensajes rechazados con NACK.', tipo: 'tipo-dlq', etiqueta: 'DLQ' }
-  ];
 
   constructor(
     private adminService: AdminColasService,
     private pedidoService: PedidoService,
-    private catalogoService: CatalogoService // Inyectamos el servicio
+    private catalogoService: CatalogoService,
+    private cdr: ChangeDetectorRef 
   ) {}
 
   ngOnInit(): void { 
@@ -72,14 +67,12 @@ export class AdminComponent implements OnInit, OnDestroy {
     this.cargarColasDesdeBroker();
   }
 
-  // ==========================================
-  // METODOS DE PEDIDOS
-  // ==========================================
   cargarPedidos(): void {
     this.cargandoPedidos = true;
     this.pedidoService.obtenerPedidos().pipe(takeUntil(this.destroy$)).subscribe(p => {
       this.pedidos = p;
       this.cargandoPedidos = false;
+      this.cdr.detectChanges(); 
     });
   }
 
@@ -92,18 +85,15 @@ export class AdminComponent implements OnInit, OnDestroy {
     return m[estado] || 'badge badge-default';
   }
 
-  // ==========================================
-  // METODOS DE CATÁLOGO (NUEVOS)
-  // ==========================================
   cargarProductos(): void {
     this.cargandoProductos = true;
     this.catalogoService.obtenerProductos().pipe(takeUntil(this.destroy$)).subscribe(p => {
       this.productos = p;
       this.cargandoProductos = false;
+      this.cdr.detectChanges(); 
     });
   }
 
-  // Método para capturar el archivo de imagen desde el HTML
   onImagenSeleccionada(event: any): void {
     const file = event.target.files[0];
     if (file) {
@@ -113,14 +103,12 @@ export class AdminComponent implements OnInit, OnDestroy {
 
   crearProducto(): void {
     this.errorCatalogo = '';
-    // Validamos los campos obligatorios del nuevo backend
     if (!this.nuevoProducto.nombre || this.nuevoProducto.precio <= 0 || !this.nuevoProducto.categoria) {
       this.errorCatalogo = 'Nombre, precio y categoría son obligatorios.';
       return;
     }
     
     this.guardandoProducto = true;
-    // Enviamos el producto y el archivo de imagen al servicio
     this.catalogoService.agregarProducto(this.nuevoProducto, this.imagenSeleccionada)
       .pipe(takeUntil(this.destroy$)).subscribe({
         next: () => {
@@ -128,10 +116,12 @@ export class AdminComponent implements OnInit, OnDestroy {
           this.nuevoProducto = { nombre: '', precio: 0, stock: 0, descripcion: '', categoria: '' };
           this.imagenSeleccionada = undefined;
           this.guardandoProducto = false;
+          this.cdr.detectChanges(); 
         },
         error: () => {
           this.errorCatalogo = 'Error al guardar el producto.';
           this.guardandoProducto = false;
+          this.cdr.detectChanges(); 
         }
       });
   }
@@ -143,73 +133,125 @@ export class AdminComponent implements OnInit, OnDestroy {
       next: () => {
         this.productos = this.productos.filter(p => p.id !== id);
         this.eliminandoProductoId = null;
+        this.cdr.detectChanges(); 
       },
       error: () => {
         this.errorCatalogo = 'Error al eliminar el producto.';
         this.eliminandoProductoId = null;
+        this.cdr.detectChanges(); 
       }
     });
   }
 
-  // ==========================================
-  // METODOS DE COLAS
-  // ==========================================
-  crearCola(): void {
+  cargarColasDesdeBroker(): void {
+    this.cargandoColasBroker = true;
+    this.errorColasBroker = '';
 
+    this.adminService.listarColas().pipe(takeUntil(this.destroy$)).subscribe({
+        next: (colas) => {
+          this.colasRealesBroker = colas;
+          this.cargandoColasBroker = false;
+          this.cdr.detectChanges(); 
+        },
+        error: () => {
+          this.errorColasBroker = 'No se pudo cargar el listado de colas en vivo.';
+          this.cargandoColasBroker = false;
+          this.cdr.detectChanges(); 
+        }
+      });
+  }
+
+  crearCola(): void {
     this.errorNombre = '';
     this.respuestaCrear = null;
+    
     if (!this.nuevaColaNombre.trim() || this.nuevaColaNombre.trim().length < 3) {
       this.errorNombre = 'El nombre debe tener al menos 3 caracteres.';
       return;
     }
+
     const req: ColaRequest = { 
         nombre: this.nuevaColaNombre.trim(), 
         durable: this.nuevaColaDurable,
         exclusiva: false,
         autoDelete: false
     };
+    
     this.creandoCola = true;
+    
     this.adminService.crearCola(req).pipe(takeUntil(this.destroy$)).subscribe(r => {
       this.respuestaCrear = r;
       this.creandoCola = false;
-      if (r.exitoso) { this.nuevaColaNombre = ''; }
+      
+      if (r.exitoso) { 
+        this.nuevaColaNombre = '';
+        this.cargarColasDesdeBroker();
+      }
+      this.cdr.detectChanges(); 
     });
   }
 
   consultarCola(): void {
     if (!this.consultarColaNombre.trim()) return;
+    
     this.infoConsulta = null;
     this.consultandoCola = true;
+    
     this.adminService.consultarCola(this.consultarColaNombre.trim()).pipe(takeUntil(this.destroy$)).subscribe(r => {
       this.infoConsulta = r;
-      this.consultandoCola = false;
+      this.consultandoCola = false; 
+      this.cdr.detectChanges(); 
     });
   }
 
   eliminarCola(): void {
     if (!this.eliminarColaNombre.trim()) return;
+    
     this.respuestaEliminar = null;
     this.eliminandoCola = true;
+    
     this.adminService.eliminarCola(this.eliminarColaNombre.trim()).pipe(takeUntil(this.destroy$)).subscribe(r => {
       this.respuestaEliminar = r;
       this.eliminandoCola = false;
-      if (r.exitoso) { this.eliminarColaNombre = ''; }
+      
+      if (r.exitoso) { 
+        this.eliminarColaNombre = '';
+        this.cargarColasDesdeBroker(); 
+      }
+      this.cdr.detectChanges(); 
     });
   }
-  cargarColasDesdeBroker(): void {
-  this.cargandoColasBroker = true;
-  this.errorColasBroker = '';
+  
+  verMensajes(nombreCola: string): void {
+      if (this.viendoMensajesCola === nombreCola) {
+          // Si hace clic en "Ocultar"
+          this.viendoMensajesCola = null;
+          this.mensajesEnCola = [];
+          this.cdr.detectChanges(); // Repintar inmediatamente
+          return; // Salir de la función aquí
+      }
+      this.viendoMensajesCola = nombreCola;
+      this.cargandoMensajes = true;
+      this.mensajesEnCola = [];
+      this.cdr.detectChanges(); // Mostrar el loader
+      
+      this.adminService.leerMensajes(nombreCola).pipe(takeUntil(this.destroy$)).subscribe(mensajes => {
+          this.mensajesEnCola = mensajes.map(msg => {
+              let contenidoParseado = msg.contenido;
+              try {
+                  if (typeof msg.contenido === 'string') {
+                      contenidoParseado = JSON.parse(msg.contenido);
+                  }
+              } catch (e) {}
+              return { ...msg, contenido: contenidoParseado };
+          });
+          this.cargandoMensajes = false;
+          this.cdr.detectChanges(); // Mostrar los mensajes ya renderizados
+      });
+  }
 
-  this.adminService.listarColas().pipe(takeUntil(this.destroy$)).subscribe({
-    next: (colas) => {
-      this.colasRealesBroker = colas;
-      this.cargandoColasBroker = false;
-    },
-    error: () => {
-      this.errorColasBroker = 'No se pudo cargar el listado de colas en vivo.';
-      this.cargandoColasBroker = false;
-    }
-  });
-}
-  ngOnDestroy(): void { this.destroy$.next(); this.destroy$.complete(); }
+  ngOnDestroy(): void { 
+    this.destroy$.next(); 
+    this.destroy$.complete(); 
+  }
 }

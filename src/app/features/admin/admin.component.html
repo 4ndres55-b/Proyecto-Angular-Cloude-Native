@@ -21,11 +21,13 @@
   <div class="tab-content" *ngIf="tabActiva === 'pedidos'">
     <div class="seccion-header">
       <h2>Órdenes en el sistema</h2>
-      <button class="btn-refresh" (click)="cargarPedidos()">🔄 Actualizar</button>
+      <button class="btn-refresh" (click)="cargarPedidos()">
+        <span *ngIf="cargandoPedidos" class="spinner-small"></span>🔄 Actualizar
+      </button>
     </div>
-    <div *ngIf="cargandoPedidos" class="loading-mini"><div class="spinner"></div></div>
-    <div class="tabla-container" *ngIf="!cargandoPedidos">
-      <table class="tabla-admin">
+    
+    <div class="tabla-container">
+      <table class="tabla-admin" *ngIf="pedidos.length > 0">
         <thead>
           <tr>
             <th>#ID</th>
@@ -49,13 +51,14 @@
           </tr>
         </tbody>
       </table>
-      <p *ngIf="pedidos.length === 0" class="sin-datos">No hay pedidos registrados aún.</p>
+      <p *ngIf="pedidos.length === 0 && !cargandoPedidos" class="sin-datos">No hay pedidos registrados aún.</p>
     </div>
   </div>
-<!-- === TAB CATÁLOGO === -->
+
+  <!-- === TAB CATÁLOGO === -->
   <div class="tab-content" *ngIf="tabActiva === 'catalogo'">
     
-    <!-- Formulario para agregar (ACTUALIZADO CON NUEVOS CAMPOS) -->
+    <!-- Formulario para agregar -->
     <div class="card-admin" style="max-width: 600px; margin-bottom: 2rem;">
       <h3>➕ Agregar Nuevo Producto</h3>
       
@@ -99,20 +102,21 @@
 
       <span class="error-msg" *ngIf="errorCatalogo">{{ errorCatalogo }}</span>
       <button class="btn-action btn-crear" style="margin-top: 1rem;" (click)="crearProducto()" [disabled]="guardandoProducto">
-        {{ guardandoProducto ? 'Guardando (Subiendo)...' : 'Guardar Producto' }}
+        <span *ngIf="guardandoProducto" class="spinner-small"></span>
+        {{ guardandoProducto ? 'Guardando...' : 'Guardar Producto' }}
       </button>
     </div>
 
     <!-- Tabla de productos -->
     <div class="seccion-header">
       <h2>Productos en Base de Datos</h2>
-      <button class="btn-refresh" (click)="cargarProductos()">🔄 Actualizar</button>
+      <button class="btn-refresh" (click)="cargarProductos()">
+        <span *ngIf="cargandoProductos" class="spinner-small"></span>🔄 Actualizar
+      </button>
     </div>
     
-    <div *ngIf="cargandoProductos" class="loading-mini"><div class="spinner"></div></div>
-    
-    <div class="tabla-container" *ngIf="!cargandoProductos">
-      <table class="tabla-admin">
+    <div class="tabla-container">
+      <table class="tabla-admin" *ngIf="productos.length > 0">
         <thead>
           <tr>
             <th>#ID</th>
@@ -132,13 +136,14 @@
               <button class="btn-refresh" style="color: #f87171; border-color: rgba(239,68,68,0.3);" 
                       (click)="eliminarProducto(prod.id)" 
                       [disabled]="eliminandoProductoId === prod.id">
+                <span *ngIf="eliminandoProductoId === prod.id" class="spinner-small"></span>
                 {{ eliminandoProductoId === prod.id ? 'Eliminando...' : '🗑️' }}
               </button>
             </td>
           </tr>
         </tbody>
       </table>
-      <p *ngIf="productos.length === 0" class="sin-datos">No hay productos en el catálogo.</p>
+      <p *ngIf="productos.length === 0 && !cargandoProductos" class="sin-datos">No hay productos en el catálogo.</p>
     </div>
   </div>
 
@@ -152,21 +157,17 @@
         <p class="card-desc">Crea una nueva cola en el broker RabbitMQ via <code>POST /colas</code></p>
         <div class="form-group">
           <label>Nombre de la Cola</label>
-          <input
-            type="text"
-            [(ngModel)]="nuevaColaNombre"
-            placeholder="ej: pedidos.express"
-            class="input-admin"
-            [class.input-error]="errorNombre" />
+          <input type="text" [(ngModel)]="nuevaColaNombre" placeholder="ej: pedidos.express" class="input-admin" [class.input-error]="errorNombre" />
           <span class="error-msg" *ngIf="errorNombre">{{ errorNombre }}</span>
         </div>
         <div class="toggle-group">
           <label class="toggle-label">
             <input type="checkbox" [(ngModel)]="nuevaColaDurable" />
-            <span>Durable (sobrevive al reinicio del broker)</span>
+            <span>Durable (sobrevive al reinicio)</span>
           </label>
         </div>
         <button class="btn-action btn-crear" (click)="crearCola()" [disabled]="creandoCola">
+          <span *ngIf="creandoCola" class="spinner-small"></span>
           {{ creandoCola ? 'Creando...' : '✅ Crear Cola' }}
         </button>
         <div class="respuesta-box" *ngIf="respuestaCrear">
@@ -185,6 +186,7 @@
           <input type="text" [(ngModel)]="consultarColaNombre" placeholder="ej: pedidos.cocina" class="input-admin" />
         </div>
         <button class="btn-action btn-consultar" (click)="consultarCola()" [disabled]="consultandoCola">
+           <span *ngIf="consultandoCola" class="spinner-small"></span>
           {{ consultandoCola ? 'Consultando...' : '🔍 Consultar' }}
         </button>
         <div class="info-box" *ngIf="infoConsulta">
@@ -208,6 +210,7 @@
           <input type="text" [(ngModel)]="eliminarColaNombre" placeholder="ej: pedidos.express" class="input-admin" />
         </div>
         <button class="btn-action btn-eliminar" (click)="eliminarCola()" [disabled]="eliminandoCola">
+           <span *ngIf="eliminandoCola" class="spinner-small"></span>
           {{ eliminandoCola ? 'Eliminando...' : '🗑️ Eliminar Cola' }}
         </button>
         <div class="respuesta-box" *ngIf="respuestaEliminar">
@@ -217,32 +220,66 @@
         </div>
       </div>
 
-      <!--Lista de colas en el broker-->
-      <div class="card-admin card-info">
+      <!-- Lista de colas en el broker (PANEL PRINCIPAL) -->
+      <div class="card-admin card-info" style="grid-column: 1 / -1;">
         <div class="seccion-header">
             <h3>📡 Colas en el Broker (En Vivo)</h3>
-            <button class="btn-refresh" (click)="cargarColasDesdeBroker()" style="padding: 4px 8px; font-size: 0.7rem;">🔄</button>
+            <button class="btn-refresh" (click)="cargarColasDesdeBroker()" style="padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">
+              <span *ngIf="cargandoColasBroker" class="spinner-small"></span>
+              {{ cargandoColasBroker ? 'Cargando...' : '🔄 Refrescar' }}
+            </button>
         </div>
-        <p class="card-desc">Colas actualmente registradas y operativas en RabbitMQ.</p>
         
-        <div *ngIf="cargandoColasBroker" class="loading-mini"><div class="spinner"></div></div>
-        <p *ngIf="errorColasBroker" class="error-msg">{{ errorColasBroker }}</p>
-
-        <div *ngIf="!cargandoColasBroker && colasRealesBroker.length === 0" class="sin-datos">
+        <p *ngIf="errorColasBroker && !cargandoColasBroker" class="error-msg" style="text-align: center;">{{ errorColasBroker }}</p>
+        <div *ngIf="!cargandoColasBroker && colasRealesBroker.length === 0 && !errorColasBroker" class="sin-datos">
           No hay colas registradas en el broker en este momento.
         </div>
-
-        <div class="cola-sistema" *ngFor="let cola of colasRealesBroker">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        
+        <!-- Iteración sobre colas -->
+        <div class="cola-sistema" *ngFor="let cola of colasRealesBroker" style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid rgba(255,255,255,0.05);">
+          
+          <!-- Cabecera de la cola -->
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
               <div>
-                  <div class="cola-nombre">{{ cola.name }}</div>
-                  <div class="cola-desc">
-                    Mensajes en espera: <strong>{{ cola.messages_ready || 0 }}</strong> | 
-                    Consumidores: <strong>{{ cola.consumers || 0 }}</strong>
+                  <div class="cola-nombre" style="font-size: 1.1rem; color: #a78bfa;">{{ cola.name }}</div>
+                  <div class="cola-desc" style="margin-top: 0.3rem;">
+                    Mensajes listos: <strong style="color: #fff;">{{ cola.messages_ready || 0 }}</strong> <span style="color: rgba(255,255,255,0.3); margin: 0 0.5rem;">|</span> 
+                    Consumidores: <strong style="color: #fff;">{{ cola.consumers || 0 }}</strong>
                   </div>
               </div>
-              <div class="cola-tipo" [ngClass]="{'tipo-dlq': cola.name.includes('dlq'), 'tipo-principal': !cola.name.includes('dlq')}">
-                {{ cola.name.includes('dlq') ? 'DLQ' : 'Activa' }}
+              
+              <div style="display: flex; gap: 1rem; align-items: center;">
+                  <!-- BOTÓN PARA VER MENSAJES: FORZAMOS SU APARICIÓN CON CSS BÁSICO -->
+                  <button 
+                    (click)="verMensajes(cola.name)"
+                    style="background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.3); color: #a78bfa; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                    <span *ngIf="cargandoMensajes && viendoMensajesCola === cola.name" class="spinner-small"></span>
+                    {{ viendoMensajesCola === cola.name ? '👁️ Ocultar' : '👁️ Ver Mensajes' }}
+                  </button>
+
+                  <div class="cola-tipo" [ngClass]="{'tipo-dlq': cola.name.includes('dlq'), 'tipo-principal': !cola.name.includes('dlq')}" style="padding: 4px 10px; font-size: 0.8rem;">
+                    {{ cola.name.includes('dlq') ? 'DLQ' : 'Activa' }}
+                  </div>
+              </div>
+          </div>
+          
+          <!-- VISOR DE MENSAJES -->
+          <div *ngIf="viendoMensajesCola === cola.name" style="margin-top: 1.5rem; padding: 1rem; background: #0f0f19; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+              
+              <!-- Loader local para los mensajes -->
+              <div *ngIf="cargandoMensajes" class="loading-mini" style="padding: 1rem;"><div class="spinner"></div></div>
+
+              <div *ngIf="!cargandoMensajes && mensajesEnCola.length === 0" class="sin-datos">
+                  No hay mensajes en esta cola.
+              </div>
+
+              <!-- Iteración de Mensajes -->
+              <div *ngFor="let msg of mensajesEnCola; let i = index" style="margin-bottom: 1.5rem; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 1rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                    <span style="font-size: 0.8rem; font-weight: 700; color: #4ade80;">Mensaje #{{ i + 1 }}</span>
+                    <span style="font-size: 0.75rem; color: rgba(255,255,255,0.5);">Ruta: <code>{{ msg.routing_key }}</code></span>
+                  </div>
+                  <pre style="background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 6px; font-size: 0.8rem; overflow-x: auto; color: #e2e8f0; margin: 0; border: 1px solid rgba(255,255,255,0.05);">{{ msg.contenido | json }}</pre>
               </div>
           </div>
         </div>
