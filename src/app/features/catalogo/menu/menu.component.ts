@@ -104,14 +104,14 @@ ngOnInit(): void {
     if (this.carrito.length === 0) return;
     this.enviandoPedido = true;
 
-this.pedidoService.crearPedido({
-  username: this.authService.getUsername(),
-  total: this.totalCarrito,
-  detalles: this.carrito.map(i => ({
-    productoId: i.productoId,
-    nombreProducto: i.nombreProducto, // Opcional, Java lo ignora si no está en la entidad
-    cantidad: i.cantidad,
-    precioUnitario: i.precioUnitario
+    this.pedidoService.crearPedido({
+      username: this.authService.getUsername(),
+      total: this.totalCarrito,
+      detalles: this.carrito.map(i => ({
+        productoId: i.productoId,
+        nombreProducto: i.nombreProducto,
+        cantidad: i.cantidad,
+        precioUnitario: i.precioUnitario
       }))
     }).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
@@ -119,9 +119,11 @@ this.pedidoService.crearPedido({
         this.carritoVisible = false;
         this.enviandoPedido = false;
         this.mostrarToast();
+        this.cdr.detectChanges();
       },
       error: () => {
         this.enviandoPedido = false;
+        this.cdr.detectChanges();
       }
     });
   }
